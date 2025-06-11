@@ -6,12 +6,17 @@
     <title>Prosta Gra Tekstowa</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English&family=IM+Fell+English+SC&family=Georgia&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English&family=IM+Fell+English+SC&family=Georgia&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="game-container">
         <h1>Prosta Gra Tekstowa</h1>
+        <div class="stats-display">
+            <p>HP: <span id="player-hp">100</span></p>
+            <p>Atak: <span id="player-attack">10</span></p>
+            <p>Złoto: <span id="player-gold">0</span></p>
+        </div>
         <p id="text-display">Witaj w grze! Jesteś na rozdrożu. Co robisz?</p>
         <div id="options-container" class="options-container">
             <button onclick="chooseOption('left')">Idź w lewo</button>
@@ -19,87 +24,6 @@
         </div>
     </div>
 
-    <script>
-        // Obiekt przechowujący stany gry
-        const gameStates = {
-            start: {
-                text: "Witaj w grze! Jesteś na rozdrożu. Co robisz?",
-                options: [
-                    { text: "Idź w lewo", nextState: "leftPath" },
-                    { text: "Idź w prawo", nextState: "rightPath" }
-                ]
-            },
-            leftPath: {
-                text: "Idziesz w lewo. Spotykasz przyjaznego wędrowca. Chcesz z nim porozmawiać?",
-                options: [
-                    { text: "Porozmawiaj", nextState: "talkToWanderer" },
-                    { text: "Ignoruj i idź dalej", nextState: "continueLeft" }
-                ]
-            },
-            talkToWanderer: {
-                text: "Wędrowiec opowiada ci o ukrytym skarbie! Gra zakończona.",
-                options: [
-                    { text: "Zacznij od nowa", nextState: "start" }
-                ]
-            },
-            continueLeft: {
-                text: "Ignorujesz wędrowca i idziesz dalej. Docierasz do starego zamku. Co robisz?",
-                options: [
-                    { text: "Wejdź do zamku", nextState: "enterCastle" },
-                    { text: "Obejście zamku", nextState: "bypassCastle" }
-                ]
-            },
-            rightPath: {
-                text: "Idziesz w prawo. Droga jest zarośnięta i trudna. Widzisz stare ruiny. Co robisz?",
-                options: [
-                    { text: "Zbadaj ruiny", nextState: "exploreRuins" },
-                    { text: "Wróć", nextState: "start" }
-                ]
-            },
-            exploreRuins: {
-                text: "W ruinach znajdujesz starą mapę, która prowadzi do... nikąd. Gra zakończona.",
-                options: [
-                    { text: "Zacznij od nowa", nextState: "start" }
-                ]
-            },
-            enterCastle: {
-                text: "Wchodzisz do zamku i zostajesz uwięziony przez smoka! Gra zakończona.",
-                options: [
-                    { text: "Zacznij od nowa", nextState: "start" }
-                ]
-            },
-            bypassCastle: {
-                text: "Obchodzisz zamek i bezpiecznie docierasz do wioski. Żyjesz długo i szczęśliwie. Gra zakończona.",
-                options: [
-                    { text: "Zacznij od nowa", nextState: "start" }
-                ]
-            }
-        };
-
-        let currentState = "start"; // Początkowy stan gry
-
-        function updateGame() {
-            const currentScene = gameStates[currentState];
-            document.getElementById("text-display").innerText = currentScene.text;
-
-            const optionsContainer = document.getElementById("options-container");
-            optionsContainer.innerHTML = ""; // Wyczyść poprzednie opcje
-
-            currentScene.options.forEach(option => {
-                const button = document.createElement("button");
-                button.innerText = option.text;
-                button.onclick = () => chooseOption(option.nextState);
-                optionsContainer.appendChild(button);
-            });
-        }
-
-        function chooseOption(nextState) {
-            currentState = nextState;
-            updateGame();
-        }
-
-        // Zainicjuj grę
-        updateGame();
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
