@@ -7,6 +7,50 @@ let playerStats = {
     // Możesz dodać więcej statystyk, np. defence, inventory itp.
 };
 
+/**
+ * Główna logika walki dla każdego przeciwnika.
+ * @param {object} enemyState - Obiekt stanu przeciwnika (np. gameStates.battleGoblin).
+ * @param {string} enemyName - Nazwa przeciwnika do wyświetlania.
+ * @param {string} nextStateOnWin - Stan, do którego gracz przechodzi po wygranej.
+ */
+function battleLogic(enemyState, enemyName, nextStateOnWin) {
+    let playerDamage = playerStats.attack + Math.floor(Math.random() * 5); // Gracz zadaje obrażenia
+    enemyState.enemyHp -= playerDamage;
+    let enemyDamage = enemyState.enemyAttack + Math.floor(Math.random() * 3); // Wróg zadaje obrażenia
+    playerStats.hp -= enemyDamage;
+
+    let combatLog = `Zadajesz ${enemyName} ${playerDamage} obrażeń. ${enemyName} zadaje ci ${enemyDamage} obrażeń.\n`;
+
+    if (playerStats.hp <= 0) {
+        enemyState.text = combatLog + `Twoje HP spadło do zera! Zostałeś pokonany przez ${enemyName}. Gra zakończona.`;
+        enemyState.options = [{ text: "Zacznij od nowa", nextState: "start", onChoose: resetGame }];
+    } else if (enemyState.enemyHp <= 0) {
+        let goldReward = Math.floor(Math.random() * 10) + 10; // Losowa nagroda złota
+        playerStats.gold += goldReward;
+        enemyState.text = combatLog + `Pokonałeś ${enemyName}! Znajdujesz ${goldReward} sztuk złota.`;
+        enemyState.options = [{ text: "Kontynuuj przygodę", nextState: nextStateOnWin }];
+    } else {
+        enemyState.text = combatLog + `Twoje HP: ${playerStats.hp}. HP ${enemyName}: ${enemyState.enemyHp}. Kontynuujesz walkę.`;
+        enemyState.options = [
+            { text: "Atakuj ponownie", nextState: enemyState.name }, // Użyj nazwy stanu, aby wrócić do walki
+            { text: "Spróbuj uciec", nextState: `escape${enemyName.replace(/\s/g, '')}` } // Dynamiczna nazwa stanu ucieczki
+        ];
+        // Musisz dodać stany ucieczki dla każdego wroga, np. escapeForestWolf, escapeMountainBandit
+        // Zauważ, że `enemyState.name` nie jest automatycznie dostępne, więc musisz przekazać je w `onEnter`
+        // Lepszym rozwiązaniem jest po prostu przekazać `enemyState` i użyć `currentState` do powrotu.
+        // Zmodyfikujmy to:
+        enemyState.options[0].nextState = currentState; // Wróć do obecnego stanu (walki)
+        // Stany ucieczki musisz stworzyć osobno dla każdego bossa
+        // Dla ułatwienia, na razie, walka jest bez ucieczki, dopóki nie dodasz specyficznej logiki ucieczki dla każdego.
+        // Przykład dla Goblina:
+        if (enemyName === "Goblin") {
+             enemyState.options.push({ text: "Spróbuj uciec", nextState: "escapeGoblin" });
+        }
+        // Dla pozostałych wrogów możesz na razie pominąć ucieczkę, lub stworzyć ogólną, np. "escapeBattle"
+        // Lub co bardziej realistyczne, jeśli wrogów jest wielu, po prostu zakończ walkę porażką w przypadku ucieczki.
+    }
+}
+
 // === OBIEKT PRZECHOWUJĄCY STANY GRY ===
 const gameStates = {
     start: {
