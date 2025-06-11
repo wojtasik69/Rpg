@@ -1,0 +1,109 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Bardziej nowoczesna czcionka */
+    background: linear-gradient(to right, #4facfe, #00f2fe); /* Ładny gradient tła */
+    color: #333; /* Ciemniejszy, ale czytelny kolor tekstu */
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    flex-direction: column;
+    padding: 20px; /* Dodatkowy padding dla małych ekranów */
+    box-sizing: border-box; /* Ważne dla responsywności */
+}
+
+.game-container {
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 12px; /* Zaokrąglone rogi */
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); /* Większy cień dla głębi */
+    max-width: 700px; /* Nieco szerszy kontener */
+    width: 100%; /* Upewnia się, że kontener zajmuje całą dostępną szerokość */
+    text-align: center;
+    margin-bottom: 20px; /* Odstęp od dołu */
+}
+
+h1 {
+    color: #007bff; /* Kolor nagłówka */
+    margin-bottom: 25px;
+    font-size: 2.2em; /* Większy nagłówek */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); /* Delikatny cień na tekście */
+}
+
+#text-display {
+    margin-bottom: 30px;
+    font-size: 1.2em; /* Nieco większy tekst główny */
+    line-height: 1.8; /* Lepszy interlinia dla czytelności */
+    color: #555; /* Trochę jaśniejszy kolor tekstu głównego */
+}
+
+.options-container {
+    display: flex;
+    flex-wrap: wrap; /* Pozwala przyciskom zawijać się na mniejsze ekrany */
+    justify-content: center;
+    gap: 15px; /* Odstępy między przyciskami */
+}
+
+.options-container button {
+    background-color: #007bff;
+    color: white;
+    padding: 12px 25px; /* Większy padding dla przycisków */
+    border: none;
+    border-radius: 8px; /* Bardziej zaokrąglone rogi przycisków */
+    cursor: pointer;
+    font-size: 1.1em; /* Większa czcionka przycisków */
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Płynniejsze przejścia i efekt najechania */
+    min-width: 150px; /* Minimalna szerokość przycisku */
+}
+
+.options-container button:hover {
+    background-color: #0056b3; /* Ciemniejszy kolor po najechaniu */
+    transform: translateY(-2px); /* Delikatne uniesienie przycisku */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); /* Cień po najechaniu */
+}
+
+.options-container button:active {
+    transform: translateY(0); /* Powrót do pierwotnej pozycji po kliknięciu */
+    box-shadow: none;
+}
+
+/* Media Queries dla responsywności */
+@media (max-width: 768px) {
+    .game-container {
+        padding: 20px;
+        margin-left: 10px;
+        margin-right: 10px;
+    }
+
+    h1 {
+        font-size: 1.8em;
+    }
+
+    #text-display {
+        font-size: 1em;
+    }
+
+    .options-container button {
+        padding: 10px 20px;
+        font-size: 0.95em;
+        width: 100%; /* Przyciski zajmują całą szerokość na małych ekranach */
+    }
+}
+
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1.5em;
+    }
+
+    #text-display {
+        font-size: 0.9em;
+    }
+
+    .options-container {
+        flex-direction: column; /* Przyciski jeden pod drugim na bardzo małych ekranach */
+    }
+
+    .options-container button {
+        margin: 5px 0; /* Odstęp między przyciskami w kolumnie */
+    }
+}
