@@ -1,213 +1,320 @@
 // === STATYSTYKI GRACZA ===
 let playerStats = {
     hp: 100,
-    maxHp: 100, // Dodano maxHp do łatwiejszego zarządzania leczeniem
+    maxHp: 100, // Maksymalne HP gracza do regeneracji
     attack: 10,
     gold: 0,
     // Możesz dodać więcej statystyk, np. defence, inventory itp.
 };
 
-/**
- * Główna logika walki dla każdego przeciwnika.
- * @param {object} enemyState - Obiekt stanu przeciwnika (np. gameStates.battleGoblin).
- * @param {string} enemyName - Nazwa przeciwnika do wyświetlania.
- * @param {string} nextStateOnWin - Stan, do którego gracz przechodzi po wygranej.
- */
-function battleLogic(enemyState, enemyName, nextStateOnWin) {
-    let playerDamage = playerStats.attack + Math.floor(Math.random() * 5); // Gracz zadaje obrażenia
-    enemyState.enemyHp -= playerDamage;
-    let enemyDamage = enemyState.enemyAttack + Math.floor(Math.random() * 3); // Wróg zadaje obrażenia
-    playerStats.hp -= enemyDamage;
-
-    let combatLog = `Zadajesz ${enemyName} ${playerDamage} obrażeń. ${enemyName} zadaje ci ${enemyDamage} obrażeń.\n`;
-
-    if (playerStats.hp <= 0) {
-        enemyState.text = combatLog + `Twoje HP spadło do zera! Zostałeś pokonany przez ${enemyName}. Gra zakończona.`;
-        enemyState.options = [{ text: "Zacznij od nowa", nextState: "start", onChoose: resetGame }];
-    } else if (enemyState.enemyHp <= 0) {
-        let goldReward = Math.floor(Math.random() * 10) + 10; // Losowa nagroda złota
-        playerStats.gold += goldReward;
-        enemyState.text = combatLog + `Pokonałeś ${enemyName}! Znajdujesz ${goldReward} sztuk złota.`;
-        enemyState.options = [{ text: "Kontynuuj przygodę", nextState: nextStateOnWin }];
-    } else {
-        enemyState.text = combatLog + `Twoje HP: ${playerStats.hp}. HP ${enemyName}: ${enemyState.enemyHp}. Kontynuujesz walkę.`;
-        enemyState.options = [
-            { text: "Atakuj ponownie", nextState: enemyState.name }, // Użyj nazwy stanu, aby wrócić do walki
-            { text: "Spróbuj uciec", nextState: `escape${enemyName.replace(/\s/g, '')}` } // Dynamiczna nazwa stanu ucieczki
-        ];
-        // Musisz dodać stany ucieczki dla każdego wroga, np. escapeForestWolf, escapeMountainBandit
-        // Zauważ, że `enemyState.name` nie jest automatycznie dostępne, więc musisz przekazać je w `onEnter`
-        // Lepszym rozwiązaniem jest po prostu przekazać `enemyState` i użyć `currentState` do powrotu.
-        // Zmodyfikujmy to:
-        enemyState.options[0].nextState = currentState; // Wróć do obecnego stanu (walki)
-        // Stany ucieczki musisz stworzyć osobno dla każdego bossa
-        // Dla ułatwienia, na razie, walka jest bez ucieczki, dopóki nie dodasz specyficznej logiki ucieczki dla każdego.
-        // Przykład dla Goblina:
-        if (enemyName === "Goblin") {
-             enemyState.options.push({ text: "Spróbuj uciec", nextState: "escapeGoblin" });
-        }
-        // Dla pozostałych wrogów możesz na razie pominąć ucieczkę, lub stworzyć ogólną, np. "escapeBattle"
-        // Lub co bardziej realistyczne, jeśli wrogów jest wielu, po prostu zakończ walkę porażką w przypadku ucieczki.
-    }
-}
-
 // === OBIEKT PRZECHOWUJĄCY STANY GRY ===
 const gameStates = {
     start: {
-        text: "Witaj w grze! Jesteś na rozdrożu. Co robisz?",
+        text: "Witaj w grze! Jesteś na początku wielkiej przygody, której celem jest pokonanie Złej Wiedźmy w jej twierdzy. Co robisz?",
         options: [
-            { text: "Idź w lewo", nextState: "leftPath" },
-            { text: "Idź w prawo", nextState: "rightPath" }
+            { text: "Wejdź do Zaklętego Lasu", nextState: "enchantedForestIntro" },
+            { text: "Poszukaj informacji w pobliskiej wiosce", nextState: "village" }
         ]
     },
-    leftPath: {
-        text: "Idziesz w lewo. Co robisz?",
+
+    // --- ETAP: Zaklęty Las ---
+    enchantedForestIntro: {
+        text: "Wkraczasz do Zaklętego Lasu. Drzewa są niezwykle gęste, a powietrze ciężkie od magii. Widzisz dwie ścieżki - jedną, która wydaje się naturalna i drugą, która lśni dziwnym, fioletowym blaskiem.",
         options: [
-            { text: "Spróbuj spotkać kogoś", nextState: "tryMeetWanderer" },
-            { text: "Idź dalej prosto", nextState: "continueLeft" }
+            { text: "Idź naturalną ścieżką", nextState: "forestPathNormal" },
+            { text: "Idź lśniącą ścieżką", nextState: "forestPathMagic" }
         ]
     },
-    tryMeetWanderer: {
-        text: "", // Tekst dynamiczny
-        options: [], // Opcje dynamiczne
-        onEnter: function() {
-            const chance = Math.random(); // Losowa liczba od 0 do 1
-            if (chance < 0.6) { // 60% szans na spotkanie wędrowca
-                gameStates.tryMeetWanderer.text = "Spotykasz przyjaznego wędrowca. Chcesz z nim porozmawiać?";
-                gameStates.tryMeetWanderer.options = [
-                    { text: "Porozmawiaj", nextState: "talkToWanderer" },
-                    { text: "Ignoruj i idź dalej", nextState: "continueLeft" }
-                ];
-            } else {
-                gameStates.tryMeetWanderer.text = "Nikogo nie spotykasz. Droga jest pusta.";
-                gameStates.tryMeetWanderer.options = [
-                    { text: "Idź dalej", nextState: "continueLeft" }
-                ];
-            }
-        }
-    },
-    talkToWanderer: {
-        text: "Wędrowiec opowiada ci o ukrytym skarbie! Dostajesz 20 złota. Gra zakończona.",
+    forestPathNormal: {
+        text: "Wybrałeś naturalną ścieżkę. Nagle z krzaków wyskakuje wściekły Wilk Leśny! Przygotuj się do walki.",
         options: [
-            { text: "Zacznij od nowa", nextState: "start", onChoose: resetGame }
+            { text: "Walcz z Wilkiem", nextState: "battleForestWolf" }
+        ]
+    },
+    forestPathMagic: {
+        text: "Lśniąca ścieżka prowadzi Cię do dziwnego kręgu kamieni. Na środku leży starożytna inskrypcja. Co robisz?",
+        options: [
+            { text: "Spróbuj odczytać inskrypcję (Zagadka)", nextState: "forestRiddle" },
+            { text: "Obejdź krąg kamieni", nextState: "forestBypassRiddle" }
+        ]
+    },
+    forestRiddle: {
+        text: "Inskrypcja głosi: 'Mam miasta, ale nie ma domów. Mam góry, ale nie ma drzew. Mam wodę, ale nie ma ryb. Czym jestem?'",
+        options: [
+            { text: "Mapa", nextState: "forestRiddleCorrect" },
+            { text: "Książka", nextState: "forestRiddleIncorrect" },
+            { text: "Zamek", nextState: "forestRiddleIncorrect" }
+        ]
+    },
+    forestRiddleCorrect: {
+        text: "Poprawna odpowiedź! Krąg kamieni rozbłyska, a przed Tobą pojawia się portal prowadzący bezpośrednio do podnóża góry. Zdobywasz 10 złota za spryt!",
+        options: [
+            { text: "Przejdź przez portal", nextState: "mountainClimbIntro" }
         ],
         onEnter: function() {
-            playerStats.gold += 20; // Wędrowiec daje złoto
+            playerStats.gold += 10;
         }
     },
-    continueLeft: {
-        text: "Ignorujesz wędrowca i idziesz dalej. Docierasz do starego zamku. Co robisz?",
+    forestRiddleIncorrect: {
+        text: "Błędna odpowiedź! Krąg kamieni zaczyna drżeć, a z ziemi wyłania się wściekły Duch Lasu! Musisz walczyć.",
         options: [
-            { text: "Wejdź do zamku", nextState: "enterCastle" },
-            { text: "Obejście zamku", nextState: "bypassCastle" }
+            { text: "Walcz z Duchem Lasu", nextState: "battleForestSpirit" }
         ]
     },
-    enterCastle: {
-        text: "Wchodzisz do zamku i zostajesz uwięziony przez smoka! Twoja przygoda dobiegła końca.",
+    forestBypassRiddle: {
+        text: "Obchodzisz krąg kamieni. Szybko jednak napotykasz wściekłego Dzikiego Lisa, który broni swojego terytorium. Przygotuj się do walki.",
+        options: [
+            { text: "Walcz z Lisem", nextState: "battleWildFox" }
+        ]
+    },
+
+    // Walki w lesie (używają battleLogic)
+    battleForestWolf: {
+        text: "", options: [], enemyHp: 25, enemyAttack: 7,
+        onEnter: function() { battleLogic(gameStates.battleForestWolf, "Wilk Leśny", "forestExit"); }
+    },
+    battleForestSpirit: {
+        text: "", options: [], enemyHp: 30, enemyAttack: 9,
+        onEnter: function() { battleLogic(gameStates.battleForestSpirit, "Duch Lasu", "forestExit"); }
+    },
+    battleWildFox: {
+        text: "", options: [], enemyHp: 20, enemyAttack: 6,
+        onEnter: function() { battleLogic(gameStates.battleWildFox, "Dziki Lis", "forestExit"); }
+    },
+    forestExit: {
+        text: "Przechodzisz przez ostatnie gęste zarośla lasu i docierasz do podnóża wysokiej, skalistej góry.",
+        options: [
+            { text: "Ruszaj w górę", nextState: "mountainClimbIntro" }
+        ]
+    },
+
+    // --- ETAP: Wdrapanie się na Górę ---
+    mountainClimbIntro: {
+        text: "Jesteś u podnóża góry, na której szczycie widać zamek wiedźmy. Widzisz strome, skaliste zbocze oraz mroczną, zdaje się, łatwiejszą ścieżkę prowadzącą do jaskini.",
+        options: [
+            { text: "Wspinaj się po zboczu", nextState: "mountainSteepClimb" },
+            { text: "Wejdź do jaskini", nextState: "mountainCavePath" }
+        ]
+    },
+    mountainSteepClimb: {
+        text: "Wspinaczka jest wyczerpująca. Z trudem utrzymujesz się na skale. Udaje Ci się wdrapać, ale tracisz 10 HP z wyczerpania.",
+        options: [
+            { text: "Kontynuuj podróż na szczyt", nextState: "mountainPeakApproach" }
+        ],
+        onEnter: function() {
+            playerStats.hp = Math.max(0, playerStats.hp - 10); // Upewnij się, że HP nie spadnie poniżej 0
+        }
+    },
+    mountainCavePath: {
+        text: "Wchodzisz do ciemnej jaskini. Nagle coś miga w oddali... Widzisz ślepego nietoperza, który bije skrzydłami o kamień wydając rytmiczny dźwięk.",
+        options: [
+            { text: "Zainteresuj się dźwiękiem (Zagadka)", nextState: "mountainRiddleCave" },
+            { text: "Obejdź nietoperza i szukaj drogi", nextState: "mountainCaveFight" }
+        ]
+    },
+    mountainRiddleCave: {
+        text: "Dźwięk Nietoperza jest rytmiczny. Bije raz w krótkich odstępach, potem dwa razy w dłuższych. Czy potrafisz odczytać wiadomość, jeśli A=1, B=2 itd.?",
+        options: [
+            { text: "Krótkie-krótkie-długie (S.O.S.)", nextState: "mountainRiddleIncorrect" },
+            { text: "Jeden-dwa-jeden (121)", nextState: "mountainRiddleCorrect" },
+            { text: "Trzy-cztery-pięć (345)", nextState: "mountainRiddleIncorrect" }
+        ]
+    },
+    mountainRiddleCorrect: {
+        text: "Poprawna odpowiedź! Dźwięki układają się w logiczną sekwencję. Nietoperz wskazuje na ukryte przejście. Zyskujesz 5 złota i odnajdujesz skrót!",
+        options: [
+            { text: "Przejdź skrótem", nextState: "mountainPeakApproach" }
+        ],
+        onEnter: function() {
+            playerStats.gold += 5;
+        }
+    },
+    mountainRiddleIncorrect: {
+        text: "To nie to! Nietoperz denerwuje się i atakuje Cię! Musisz walczyć.",
+        options: [
+            { text: "Walcz ze ślepym Nietoperzem", nextState: "battleBlindBat" }
+        ]
+    },
+    mountainCaveFight: {
+        text: "Obchodząc Nietoperza, wpadasz na pułapkę zastawioną przez Górskiego Bandytę! Przygotuj się do walki.",
+        options: [
+            { text: "Walcz z Bandytą", nextState: "battleMountainBandit" }
+        ]
+    },
+    // Walki na górze
+    battleBlindBat: {
+        text: "", options: [], enemyHp: 15, enemyAttack: 4,
+        onEnter: function() { battleLogic(gameStates.battleBlindBat, "Ślepy Nietoperz", "mountainPeakApproach"); }
+    },
+    battleMountainBandit: {
+        text: "", options: [], enemyHp: 30, enemyAttack: 8,
+        onEnter: function() { battleLogic(gameStates.battleMountainBandit, "Górski Bandyta", "mountainPeakApproach"); }
+    },
+    mountainPeakApproach: {
+        text: "Po trudach wspinaczki docierasz w pobliże twierdzy wiedźmy. Widzisz masywne bramy, a obok nich małą, ledwo widoczną ścieżkę wzdłuż urwiska.",
+        options: [
+            { text: "Spróbuj otworzyć bramę twierdzy", nextState: "fortressGates" },
+            { text: "Spróbuj przejść ścieżką urwiska", nextState: "fortressCliffPath" }
+        ]
+    },
+
+    // --- ETAP: Przejście przez Twierdzę ---
+    fortressGates: {
+        text: "Próbujesz otworzyć masywne bramy. Są zamknięte na wielką kłódkę. Czy spróbujesz ją otworzyć siłą, czy poszukasz klucza?",
+        options: [
+            { text: "Wytrychem (wymaga 15 Ataku)", nextState: "fortressPickLock" },
+            { text: "Szukaj klucza", nextState: "fortressSearchKey" }
+        ]
+    },
+    fortressPickLock: {
+        text: "",
+        options: [],
+        onEnter: function() {
+            if (playerStats.attack >= 15) {
+                gameStates.fortressPickLock.text = "Udało Ci się sforsować kłódkę! Bramy skrzypiąc otwierają się. Wchodzisz do środka, ale włącza się magiczny alarm!";
+                gameStates.fortressPickLock.options = [{ text: "Walcz ze strażnikiem", nextState: "battleFortressGuard" }];
+            } else {
+                gameStates.fortressPickLock.text = "Jesteś za słaby, by sforsować kłódkę. W akcie frustracji uderzasz w bramę i ściągasz uwagę strażnika!";
+                gameStates.fortressPickLock.options = [{ text: "Walcz ze strażnikiem", nextState: "battleFortressGuard" }];
+            }
+        }
+    },
+    fortressSearchKey: {
+        text: "Szukasz klucza wokół bram. Nagle zauważasz małą, wklęsłą płytkę w kamieniu, z której wydobywa się ledwie słyszalny szmer.",
+        options: [
+            { text: "Przyjrzyj się płytce (Zagadka)", nextState: "fortressRiddlePlate" },
+            { text: "Ignoruj i szukaj dalej", nextState: "fortressSearchKeyFail" }
+        ]
+    },
+    fortressRiddlePlate: {
+        text: "Płytka ma wygrawerowane cztery symbole: słońce, księżyc, gwiazda, czaszka. Szmer staje się głośniejszy, a czujesz, że płytka chce, abyś nacisnął symbole w odpowiedniej kolejności. Wiedźma ceni sobie potęgę nocy bardziej niż blask dnia.",
+        options: [
+            { text: "Księżyc, Gwiazda, Czaszka, Słońce", nextState: "fortressRiddleCorrect" }, // Poprawna kolejność
+            { text: "Słońce, Księżyc, Gwiazda, Czaszka", nextState: "fortressRiddleIncorrect" },
+            { text: "Czaszka, Słońce, Księżyc, Gwiazda", nextState: "fortressRiddleIncorrect" }
+        ]
+    },
+    fortressRiddleCorrect: {
+        text: "Poprawna kolejność! Płytka cofa się, ukazując ukryty mechanizm. Z daleka słychać otwieranie się małych, bocznych drzwi. Wchodzisz niezauważony. Zyskujesz 10 złota za spryt!",
+        options: [
+            { text: "Wejdź do twierdzy", nextState: "fortressInside" }
+        ],
+        onEnter: function() {
+            playerStats.gold += 10;
+        }
+    },
+    fortressRiddleIncorrect: {
+        text: "Błędna kolejność! Płytka zaczyna pulsować czerwonym światłem, a z pobliskiej wieży przylatuje Gargulec, który ma z Tobą do czynienia!",
+        options: [
+            { text: "Walcz z Gargulcem", nextState: "battleGargoyle" }
+        ]
+    },
+    fortressSearchKeyFail: {
+        text: "Ignorujesz płytkę i szukasz dalej. Nic nie znajdujesz, ale w oddali słyszysz kroki. Strażnik z twierdzy Cię zauważył!",
+        options: [
+            { text: "Walcz ze strażnikiem", nextState: "battleFortressGuard" }
+        ]
+    },
+    // Walki w twierdzy
+    battleFortressGuard: {
+        text: "", options: [], enemyHp: 35, enemyAttack: 10,
+        onEnter: function() { battleLogic(gameStates.battleFortressGuard, "Strażnik Twierdzy", "fortressInside"); }
+    },
+    battleGargoyle: {
+        text: "", options: [], enemyHp: 40, enemyAttack: 12,
+        onEnter: function() { battleLogic(gameStates.battleGargoyle, "Gargulec", "fortressInside"); }
+    },
+    fortressCliffPath: {
+        text: "Idziesz wąską ścieżką wzdłuż urwiska. Jest zdradliwie, ale udaje Ci się znaleźć ukryte wejście do twierdzy, omijając główną bramę.",
+        options: [
+            { text: "Wejdź do twierdzy", nextState: "fortressInside" }
+        ]
+    },
+    fortressInside: {
+        text: "Jesteś wewnątrz twierdzy. Powietrze jest chłodne i wilgotne. Widzisz przejście do lochów i wielką salę tronową.",
+        options: [
+            { text: "Idź do lochów", nextState: "dungeonEntrance" }, // Prowadzi do Smoka
+            { text: "Idź do sali tronowej", nextState: "throneRoom" } // Możliwe, że zbyt wcześnie do wiedźmy
+        ]
+    },
+
+    // --- ETAP: Lochy / Spotkanie ze Smokiem ---
+    dungeonEntrance: {
+        text: "Wchodzisz do ciemnych, cuchnących lochów. Smród siarki i spalenizny jest przytłaczający. Nagle słyszysz głębokie, gardłowe pomruki... Przed Tobą leży ogromny, uśpiony Smok pilnujący przejścia. Co robisz?",
+        options: [
+            { text: "Spróbuj zakraść się obok Smoka", nextState: "dragonStealth" },
+            { text: "Obudź Smoka i walcz", nextState: "battleDragon" }
+        ]
+    },
+    dragonStealth: {
+        text: "",
+        options: [],
+        onEnter: function() {
+            const stealthChance = Math.random();
+            if (stealthChance < 0.3) { // Niska szansa na zakradnięcie się (30%)
+                gameStates.dragonStealth.text = "Udało Ci się ostrożnie przemknąć obok śpiącego Smoka! Jesteś bezpieczny po drugiej stronie lochów. To było o włos!";
+                gameStates.dragonStealth.options = [{ text: "Kontynuuj do Sali Tronowej", nextState: "throneRoom" }];
+            } else {
+                gameStates.dragonStealth.text = "Niechcący potykasz się o kamień! Smok budzi się z rykiem i patrzy prosto na Ciebie! Przygotuj się do walki!";
+                gameStates.dragonStealth.options = [{ text: "Walcz ze Smokiem", nextState: "battleDragon" }];
+            }
+        }
+    },
+    battleDragon: {
+        text: "", options: [], enemyHp: 80, enemyAttack: 15,
+        onEnter: function() { battleLogic(gameStates.battleDragon, "Smok", "throneRoom"); }
+    },
+
+    // --- ETAP: Sala Tronowa (Cel gry) ---
+    throneRoom: {
+        text: "Wchodzisz do ogromnej Sali Tronowej. Na końcu pomieszczenia, na wysokim tronie, siedzi zła Wiedźma. Widzi Cię i uśmiecha się drwiąco. To jest koniec podróży. Musisz ją pokonać!",
+        options: [
+            { text: "Walcz z Wiedźmą", nextState: "battleWitch" }
+        ]
+    },
+    battleWitch: {
+        text: "", options: [], enemyHp: 100, enemyAttack: 20, // Wiedźma jest najsilniejsza
+        onEnter: function() { battleLogic(gameStates.battleWitch, "Zła Wiedźma", "gameWin"); }
+    },
+    gameWin: {
+        text: "Pokonałeś Złą Wiedźmę! Jej mroczna magia rozpływa się, a świat znowu jest bezpieczny. Jesteś bohaterem! GRATULACJE!",
+        options: [
+            { text: "Zacznij nową przygodę", nextState: "start", onChoose: resetGame }
+        ]
+    },
+    // --- KONIEC GRY (Porażka) ---
+    gameOver: {
+        text: "Twoja przygoda dobiegła końca w niepowodzeniu. Niestety, zostałeś pokonany.",
         options: [
             { text: "Zacznij od nowa", nextState: "start", onChoose: resetGame }
         ]
     },
-    bypassCastle: {
-        text: "Obchodzisz zamek i bezpiecznie docierasz do tętniącej życiem wioski.",
-        options: [
-            { text: "Wejdź do wioski", nextState: "village" }
-        ]
-    },
-    rightPath: {
-        text: "Idziesz w prawo. Droga jest zarośnięta i trudna. Widzisz stare ruiny. Co robisz?",
-        options: [
-            { text: "Zbadaj ruiny", nextState: "exploreRuins" },
-            { text: "Wróć na rozdroże", nextState: "start" }
-        ]
-    },
-    exploreRuins: {
-        text: "", // Tekst dynamiczny
-        options: [], // Opcje dynamiczne
-        onEnter: function() {
-            const dangerChance = Math.random();
-            if (dangerChance < 0.7) { // 70% szans na walkę
-                gameStates.exploreRuins.text = "W ruinach ukrywa się goblin! Musisz walczyć!";
-                gameStates.exploreRuins.options = [{ text: "Walcz z Goblinem", nextState: "battleGoblin" }];
-            } else {
-                gameStates.exploreRuins.text = "W ruinach znajdujesz starą mapę, która prowadzi do... nikąd. Ale znajdujesz 10 złota! Gra zakończona.";
-                playerStats.gold += 10;
-                gameStates.exploreRuins.options = [{ text: "Zacznij od nowa", nextState: "start", onChoose: resetGame }];
-            }
-        }
-    },
-    // === ETAP WALKII ===
-    battleGoblin: {
-        text: "",
-        options: [],
-        enemyHp: 20, // HP Goblina (initial value, resetowany w resetGame)
-        enemyAttack: 5,
-        onEnter: function() {
-            gameStates.battleGoblin.text = `Napotykasz groźnego Goblina! HP Goblina: ${gameStates.battleGoblin.enemyHp}. Co robisz?`;
-            gameStates.battleGoblin.options = [
-                { text: "Atakuj Goblina", nextState: "attackGoblin" },
-                { text: "Spróbuj uciec", nextState: "escapeGoblin" }
-            ];
-        }
-    },
-    attackGoblin: {
-        text: "",
-        options: [],
-        onEnter: function() {
-            let playerDamage = playerStats.attack + Math.floor(Math.random() * 5); // Gracz zadaje obrażenia
-            gameStates.battleGoblin.enemyHp -= playerDamage;
-            let enemyDamage = gameStates.battleGoblin.enemyAttack + Math.floor(Math.random() * 3); // Goblin zadaje obrażenia
-            playerStats.hp -= enemyDamage;
 
-            let combatLog = `Zadajesz Goblinowi ${playerDamage} obrażeń. Goblin zadaje ci ${enemyDamage} obrażeń.\n`;
 
-            if (playerStats.hp <= 0) {
-                gameStates.attackGoblin.text = combatLog + "Twoje HP spadło do zera! Zostałeś pokonany. Gra zakończona.";
-                gameStates.attackGoblin.options = [{ text: "Zacznij od nowa", nextState: "start", onChoose: resetGame }];
-            } else if (gameStates.battleGoblin.enemyHp <= 0) {
-                playerStats.gold += 15; // Nagroda za pokonanie
-                gameStates.attackGoblin.text = combatLog + "Pokonałeś Goblina! Znajdujesz 15 sztuk złota. Gra zakończona.";
-                gameStates.attackGoblin.options = [{ text: "Zacznij od nowa", nextState: "start", onChoose: resetGame }];
-            } else {
-                gameStates.attackGoblin.text = combatLog + `Twoje HP: ${playerStats.hp}. HP Goblina: ${gameStates.battleGoblin.enemyHp}. Kontynuujesz walkę.`;
-                gameStates.attackGoblin.options = [
-                    { text: "Atakuj ponownie", nextState: "attackGoblin" },
-                    { text: "Spróbuj uciec", nextState: "escapeGoblin" }
-                ];
-            }
-        }
-    },
-    escapeGoblin: {
-        text: "",
-        options: [],
+    // --- ETAPY WCZEŚNIEJ OMÓWIONE (Dla kontekstu, jeśli nie używasz ich bezpośrednio w ścieżkach) ---
+    // Możesz je usunąć lub zintegrować, jeśli chcesz, by były dostępne z "wioski" lub jako boczne zadania
+    talkToWanderer: {
+        text: "Wędrowiec opowiada ci o ukrytym skarbie! Dostajesz 20 złota. Gra zakończona.", // Zmiana zakończenia, by nie kończyć gry
+        options: [
+            { text: "Kontynuuj podróż", nextState: "enchantedForestIntro" } // Po rozmowie wracasz do lasu
+        ],
         onEnter: function() {
-            const escapeChance = Math.random();
-            if (escapeChance < 0.4) { // 40% szans na ucieczkę
-                gameStates.escapeGoblin.text = "Udało ci się uciec przed Goblinem!";
-                gameStates.escapeGoblin.options = [{ text: "Idź dalej do wioski", nextState: "village" }];
-            } else {
-                let enemyDamage = gameStates.battleGoblin.enemyAttack + Math.floor(Math.random() * 3);
-                playerStats.hp -= enemyDamage;
-                if (playerStats.hp <= 0) {
-                    gameStates.escapeGoblin.text = `Nie udało ci się uciec i otrzymujesz ${enemyDamage} obrażeń. Twoje HP spadło do zera! Zostałeś pokonany. Gra zakończona.`;
-                    gameStates.escapeGoblin.options = [{ text: "Zacznij od nowa", nextState: "start", onChoose: resetGame }];
-                } else {
-                    gameStates.escapeGoblin.text = `Nie udało ci się uciec i otrzymujesz ${enemyDamage} obrażeń. Musisz kontynuować walkę! Twoje HP: ${playerStats.hp}.`;
-                    gameStates.escapeGoblin.options = [
-                        { text: "Atakuj Goblina", nextState: "attackGoblin" },
-                        { text: "Spróbuj uciec ponownie", nextState: "escapeGoblin" }
-                    ];
-                }
-            }
+            playerStats.gold += 20;
         }
     },
-    // === ETAP WIOSKI I SKLEPU ===
+    // continueLeft, enterCastle, bypassCastle, rightPath, exploreRuins, battleGoblin, escapeGoblin
+    // Te stany można dostosować, aby były np. częścią "bocznych misji" z wioski
+    // Jeśli nie są używane w żadnej ścieżce, można je usunąć
+    // Przykład: Usunąłem większość pierwotnych stanów, pozostawiając tylko te potrzebne do nowej fabuły.
+    // Jeśli chcesz, aby były dostępne z wioski, dodaj odpowiednie opcje w `village`.
+
+    // --- ETAP WIOSKI I SKLEPU (Zmodyfikowane) ---
     village: {
-        text: "Docierasz do tętniącej życiem wioski. Co chcesz zrobić?",
+        text: "Docierasz do tętniącej życiem wioski. Możesz odpocząć, zrobić zakupy lub wyruszyć w dalszą podróż.",
         options: [
             { text: "Odwiedź sklep", nextState: "shop" },
             { text: "Odpocznij w gospodzie", nextState: "restAtInn" },
-            { text: "Wróć na rozdroże", nextState: "start" } // Opcja powrotu
+            { text: "Wróć do początku przygody (Las)", nextState: "enchantedForestIntro" } // Powrót do początku głównej ścieżki
         ]
     },
     shop: {
@@ -256,8 +363,6 @@ const gameStates = {
             playerStats.hp = playerStats.maxHp; // Przywróć HP do pełna
         }
     },
-    // --- Tutaj możesz dodawać kolejne stany gry ---
-    // np. questBoard, dungeonEntrance, finalBoss itp.
 };
 
 let currentState = "start"; // Początkowy stan gry
@@ -272,6 +377,42 @@ function updateStatsDisplay() {
     document.getElementById("player-attack").innerText = playerStats.attack;
     document.getElementById("player-gold").innerText = playerStats.gold;
 }
+
+/**
+ * Główna logika walki dla każdego przeciwnika.
+ * Przeniesiona tu, aby uniknąć powtórzeń kodu.
+ * @param {object} enemyState - Obiekt stanu przeciwnika (np. gameStates.battleGoblin).
+ * @param {string} enemyName - Nazwa przeciwnika do wyświetlania.
+ * @param {string} nextStateOnWin - Stan, do którego gracz przechodzi po wygranej.
+ */
+function battleLogic(enemyState, enemyName, nextStateOnWin) {
+    let playerDamage = playerStats.attack + Math.floor(Math.random() * 5); // Gracz zadaje obrażenia + losowy bonus
+    enemyState.enemyHp -= playerDamage;
+    let enemyDamage = enemyState.enemyAttack + Math.floor(Math.random() * 3); // Wróg zadaje obrażenia + losowy bonus
+
+    let combatLog = `Zadajesz ${enemyName} ${playerDamage} obrażeń. ${enemyName} zadaje ci ${enemyDamage} obrażeń.\n`;
+
+    if (playerStats.hp <= 0) {
+        playerStats.hp = 0; // Upewnij się, że HP nie spadnie poniżej 0 na wyświetlaczu
+        enemyState.text = combatLog + `Twoje HP spadło do zera! Zostałeś pokonany przez ${enemyName}.`;
+        enemyState.options = [{ text: "Zacznij od nowa", nextState: "start", onChoose: resetGame }];
+    } else if (enemyState.enemyHp <= 0) {
+        let goldReward = Math.floor(Math.random() * 10) + enemyState.enemyAttack; // Nagroda złota proporcjonalna do siły wroga
+        playerStats.gold += goldReward;
+        enemyState.text = combatLog + `Pokonałeś ${enemyName}! Znajdujesz ${goldReward} sztuk złota.`;
+        enemyState.options = [{ text: "Kontynuuj przygodę", nextState: nextStateOnWin }];
+    } else {
+        enemyState.text = combatLog + `Twoje HP: ${playerStats.hp}. HP ${enemyName}: ${enemyState.enemyHp}. Kontynuujesz walkę.`;
+        // Opcje walki - zawsze powrót do obecnego stanu (czyli kontynuacja walki)
+        enemyState.options = [
+            { text: "Atakuj ponownie", nextState: currentState }
+            // Opcja ucieczki może być dodana specyficznie dla niektórych walk
+            // lub zaimplementowana jako ogólna opcja z ryzykiem
+            // { text: "Spróbuj uciec", nextState: "escapeBattle" } // wymagałoby stanu "escapeBattle"
+        ];
+    }
+}
+
 
 /**
  * Aktualizuje tekst i opcje wyświetlanej sceny w grze.
@@ -340,14 +481,25 @@ function resetGame() {
     playerStats.gold = 0;
 
     // Resetowanie specyficznych dla sceny zmiennych (np. HP wrogów)
-    if (gameStates.battleGoblin) {
-        gameStates.battleGoblin.enemyHp = 20; // Przywróć HP Goblina
-    }
-    // Dodaj reset innych zmiennych, jeśli będą
+    // Ważne: Dodaj tutaj wszystkie wrogów, których HP resetujesz
+    if (gameStates.battleGoblin) gameStates.battleGoblin.enemyHp = 20; // Przywróć HP Goblina (jeśli go używasz)
+    if (gameStates.battleForestWolf) gameStates.battleForestWolf.enemyHp = 25;
+    if (gameStates.battleForestSpirit) gameStates.battleForestSpirit.enemyHp = 30;
+    if (gameStates.battleWildFox) gameStates.battleWildFox.enemyHp = 20;
+    if (gameStates.battleBlindBat) gameStates.battleBlindBat.enemyHp = 15;
+    if (gameStates.battleMountainBandit) gameStates.battleMountainBandit.enemyHp = 30;
+    if (gameStates.battleFortressGuard) gameStates.battleFortressGuard.enemyHp = 35;
+    if (gameStates.battleGargoyle) gameStates.battleGargoyle.enemyHp = 40;
+    if (gameStates.battleDragon) gameStates.battleDragon.enemyHp = 80;
+    if (gameStates.battleWitch) gameStates.battleWitch.enemyHp = 100;
+
+    // Zresetuj currentState do "start", aby gra rozpoczęła się od początku
+    currentState = "start";
 }
 
 
 // === ZAINICJUJ GRĘ PO ZAŁADOWANIU STRONY ===
+// document.addEventListener("DOMContentLoaded", ...) to dobry sposób, aby upewnić się, że HTML jest załadowany
 document.addEventListener("DOMContentLoaded", () => {
     updateGame();
 });
