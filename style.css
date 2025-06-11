@@ -1,7 +1,8 @@
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(to right, #4facfe, #00f2fe);
-    color: #333;
+    font-family: 'Georgia', serif; /* Klasyczna, szeryfowa czcionka, idealna do fantasy */
+    background-color: #3e2723; /* Ciemny brąz, nawiązujący do ziemi/drewna */
+    background-image: url('https://www.transparenttextures.com/patterns/dark-mosaic.png'); /* Delikatna tekstura, imitująca kamień/drewno */
+    color: #e0e0e0; /* Jasny, "wyblakły" kolor tekstu */
     margin: 0;
     display: flex;
     justify-content: center;
@@ -13,90 +14,129 @@ body {
 }
 
 .game-container {
-    background-color: #ffffff;
+    background-color: #6d4c41; /* Ciemniejszy brąz, jako tło dla treści */
+    background-image: url('https://www.transparenttextures.com/patterns/paper-fibers.png'); /* Tekstura imitująca stary papier/pergamin */
     padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-    max-width: 700px;
+    border-radius: 8px; /* Delikatne zaokrąglenie */
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5); /* Mocniejszy, wyraźniejszy cień */
+    max-width: 750px; /* Nieco szerszy kontener */
     width: 100%;
     text-align: center;
+    border: 2px solid #5d4037; /* Gruby, ciemny brzeg */
     margin-bottom: 20px;
+    position: relative; /* Dla ramki graficznej */
 }
 
+/* Dekoracyjna ramka dookoła kontenera (można zastąpić obrazkiem PNG) */
+.game-container::before,
+.game-container::after {
+    content: '';
+    position: absolute;
+    border: 5px double #a1887f; /* Podwójna ramka */
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+    pointer-events: none; /* Pozwala na klikanie przez ramkę */
+    border-radius: 12px;
+}
+
+.game-container::after {
+    border: 5px solid #8d6e63; /* Dodatkowa, wewnętrzna ramka */
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    border-radius: 10px;
+}
+
+
 h1 {
-    color: #007bff;
+    font-family: 'IM Fell English SC', serif; /* Czcionka stylizowana na stare pismo */
+    color: #ffd700; /* Złoty kolor dla nagłówka */
     margin-bottom: 25px;
-    font-size: 2.2em;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+    font-size: 2.8em; /* Większy nagłówek */
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7); /* Wyraźny cień dla efektu 3D */
+    letter-spacing: 2px; /* Rozstrzelenie liter */
+    border-bottom: 2px solid #a1887f; /* Podkreślenie nagłówka */
+    padding-bottom: 10px;
 }
 
 #text-display {
-    margin-bottom: 30px;
-    font-size: 1.2em;
-    line-height: 1.8;
-    color: #555;
+    margin-bottom: 35px;
+    font-size: 1.3em; /* Większy tekst główny */
+    line-height: 1.7;
+    color: #f5f5dc; /* Bardzo jasny, prawie kremowy kolor tekstu (kolor pergaminu) */
+    text-align: justify; /* Wyrównanie do lewej i prawej */
+    text-indent: 1.5em; /* Wcięcie pierwszego wiersza jak w księdze */
 }
 
 .options-container {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 15px;
+    gap: 20px; /* Większe odstępy między przyciskami */
 }
 
 .options-container button {
-    background-color: #007bff;
-    color: white;
-    padding: 12px 25px;
-    border: none;
-    border-radius: 8px;
+    background-color: #8b4513; /* Kolor starego drewna/skóry */
+    color: #fff; /* Biały tekst na przycisku */
+    padding: 15px 30px; /* Większy padding */
+    border: 2px solid #5a2e0a; /* Ciemniejsza ramka przycisku */
+    border-radius: 5px;
     cursor: pointer;
-    font-size: 1.1em;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    min-width: 150px;
+    font-size: 1.2em; /* Większa czcionka przycisków */
+    font-family: 'IM Fell English', serif; /* Czcionka na przyciskach */
+    text-transform: uppercase; /* Wielkie litery */
+    box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.4); /* Cień przycisku */
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    min-width: 180px; /* Minimalna szerokość przycisku */
+    letter-spacing: 1px;
 }
 
 .options-container button:hover {
-    background-color: #0056b3;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    background-color: #a0522d; /* Jaśniejszy brąz po najechaniu */
+    transform: translateY(-3px); /* Większe uniesienie */
+    box-shadow: 5px 5px 12px rgba(0, 0, 0, 0.6); /* Mocniejszy cień */
 }
 
 .options-container button:active {
     transform: translateY(0);
-    box-shadow: none;
+    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
 }
 
 /* Media Queries dla responsywności */
 @media (max-width: 768px) {
     .game-container {
-        padding: 20px;
-        margin-left: 10px;
-        margin-right: 10px;
+        padding: 25px;
+        margin-left: 15px;
+        margin-right: 15px;
     }
 
     h1 {
-        font-size: 1.8em;
+        font-size: 2.2em;
     }
 
     #text-display {
-        font-size: 1em;
+        font-size: 1.1em;
     }
 
     .options-container button {
-        padding: 10px 20px;
-        font-size: 0.95em;
+        padding: 12px 25px;
+        font-size: 1em;
         width: 100%;
     }
 }
 
 @media (max-width: 480px) {
     h1 {
-        font-size: 1.5em;
+        font-size: 1.8em;
     }
 
     #text-display {
-        font-size: 0.9em;
+        font-size: 0.95em;
+        text-indent: 0; /* Brak wcięcia na małych ekranach */
+        text-align: left; /* Wyrównanie do lewej */
     }
 
     .options-container {
@@ -104,6 +144,6 @@ h1 {
     }
 
     .options-container button {
-        margin: 5px 0;
+        margin: 8px 0;
     }
 }
