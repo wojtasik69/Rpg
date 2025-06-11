@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prosta Gra Tekstowa</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+        .game-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            text-align: center;
+        }
+        #text-display {
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+        .options-container button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+        }
+        .options-container button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Prosta Gra Tekstowa</h1>
+        <p id="text-display">Witaj w grze! Jesteś na rozdrożu. Co robisz?</p>
+        <div id="options-container" class="options-container">
+            <button onclick="chooseOption('left')">Idź w lewo</button>
+            <button onclick="chooseOption('right')">Idź w prawo</button>
+        </div>
+    </div>
+
+    <script>
+        // Obiekt przechowujący stany gry
+        const gameStates = {
+            start: {
+                text: "Witaj w grze! Jesteś na rozdrożu. Co robisz?",
+                options: [
+                    { text: "Idź w lewo", nextState: "leftPath" },
+                    { text: "Idź w prawo", nextState: "rightPath" }
+                ]
+            },
+            leftPath: {
+                text: "Idziesz w lewo. Spotykasz przyjaznego wędrowca. Chcesz z nim porozmawiać?",
+                options: [
+                    { text: "Porozmawiaj", nextState: "talkToWanderer" },
+                    { text: "Ignoruj i idź dalej", nextState: "continueLeft" }
+                ]
+            },
+            talkToWanderer: {
+                text: "Wędrowiec opowiada ci o ukrytym skarbie! Gra zakończona.",
+                options: [
+                    { text: "Zacznij od nowa", nextState: "start" }
+                ]
+            },
+            continueLeft: {
+                text: "Ignorujesz wędrowca i idziesz dalej. Docierasz do starego zamku. Co robisz?",
+                options: [
+                    { text: "Wejdź do zamku", nextState: "enterCastle" },
+                    { text: "Obejście zamku", nextState: "bypassCastle" }
+                ]
+            },
+            rightPath: {
+                text: "Idziesz w prawo. Droga jest zarośnięta i trudna. Widzisz stare ruiny. Co robisz?",
+                options: [
+                    { text: "Zbadaj ruiny", nextState: "exploreRuins" },
+                    { text: "Wróć", nextState: "start" }
+                ]
+            },
+            exploreRuins: {
+                text: "W ruinach znajdujesz starą mapę, która prowadzi do... nikąd. Gra zakończona.",
+                options: [
+                    { text: "Zacznij od nowa", nextState: "start" }
+                ]
+            },
+            enterCastle: {
+                text: "Wchodzisz do zamku i zostajesz uwięziony przez smoka! Gra zakończona.",
+                options: [
+                    { text: "Zacznij od nowa", nextState: "start" }
+                ]
+            },
+            bypassCastle: {
+                text: "Obchodzisz zamek i bezpiecznie docierasz do wioski. Żyjesz długo i szczęśliwie. Gra zakończona.",
+                options: [
+                    { text: "Zacznij od nowa", nextState: "start" }
+                ]
+            }
+        };
+
+        let currentState = "start"; // Początkowy stan gry
+
+        function updateGame() {
+            const currentScene = gameStates[currentState];
+            document.getElementById("text-display").innerText = currentScene.text;
+
+            const optionsContainer = document.getElementById("options-container");
+            optionsContainer.innerHTML = ""; // Wyczyść poprzednie opcje
+
+            currentScene.options.forEach(option => {
+                const button = document.createElement("button");
+                button.innerText = option.text;
+                button.onclick = () => chooseOption(option.nextState);
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        function chooseOption(nextState) {
+            currentState = nextState;
+            updateGame();
+        }
+
+        // Zainicjuj grę
+        updateGame();
+    </script>
+</body>
+</html>
